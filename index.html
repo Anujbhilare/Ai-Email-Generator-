@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Email Response Assistant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary-color: #e53935;
+      --primary-dark: #b71c1c;
+      --bg-dark: #121212;
+      --card-bg: #1e1e1e;
+      --text-light: #f5f5f5;
+      --border-dark: #333;
+      --input-bg: #2c2c2c;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 3rem auto;
+      background: var(--card-bg);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 2rem;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 1rem;
+      display: block;
+      color: var(--text-light);
+    }
+
+    input, textarea {
+      width: 100%;
+      margin-top: 0.5rem;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 1px solid var(--border-dark);
+      border-radius: 8px;
+      background-color: var(--input-bg);
+      color: var(--text-light);
+      transition: border-color 0.3s ease, background-color 0.3s ease;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--primary-color);
+      outline: none;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      margin-top: 2rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      background-color: var(--primary-color);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    #response {
+      margin-top: 2rem;
+      background: #2e2e2e;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      font-size: 0.95rem;
+      color: #e0e0e0;
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.05);
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      button {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Email Response Assistant</h1>
+    
+    <label for="subject">Email Subject</label>
+    <input type="text" id="subject" placeholder="e.g., Meeting reschedule request" />
+
+    <label for="intent">Response Intent</label>
+    <input type="text" id="intent" placeholder="e.g., confirm, apologize, decline..." />
+
+    <label for="context">Email Context</label>
+    <textarea id="context" rows="5" placeholder="Paste the original email or a brief summary..."></textarea>
+
+    <label for="notes">Additional Notes (Optional)</label>
+    <textarea id="notes" rows="3" placeholder="Tone, key points, style, etc."></textarea>
+
+    <button onclick="generateEmail()">Generate Email Response</button>
+
+    <div id="response"></div>
+  </div>
+
+  <script>
+    async function generateEmail() {
+      const subject = document.getElementById('subject').value.trim();
+      const intent = document.getElementById('intent').value.trim();
+      const context = document.getElementById('context').value.trim();
+      const notes = document.getElementById('notes').value.trim();
+
+      let prompt = `You are replying to an email with the subject "${subject}".\n`;
+      if (intent) prompt += `Intent: ${intent}\n`;
+      if (context) prompt += `Email context: ${context}\n`;
+      if (notes) prompt += `Additional instructions: ${notes}\n`;
+      prompt += `\nWrite a polite, professional, and helpful email response.`;
+
+      const responseDiv = document.getElementById('response');
+      responseDiv.innerText = 'Generating response...';
+
+      try {
+        const res = await fetch('http://localhost:5000/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        const data = await res.json();
+        responseDiv.innerText = data.response || data.error || 'No response received.';
+      } catch (error) {
+        responseDiv.innerText = 'Error connecting to server.';
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>
